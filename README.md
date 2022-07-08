@@ -24,17 +24,9 @@ The OpenGL version used is **OpenGL 3.3**.
 
 ## Installation
 
-```
-go install github.com/NoetherianRing/Chip-8
-```
+Chip8 executable for linux is provided in the [release](https://github.com/NoetherianRing/Chip-8/releases/tag/release) section.
 
 ## Run
-
-To run this Chip-8 emulator you need to be in the chip-8 folder and execute:
-
-```
-go run main.go
-```
 
 By default, it's going to run with the ROM file PONG.ch8. If you want to change it, you need to change the configuration.
 
