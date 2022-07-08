@@ -44,9 +44,9 @@ This Chip-8 emulator has a config.yml file that looks like this:
 
 ```yml
 paths:
-  beep: "../chip-8/assets/beep.mp3"
-  rom: "../chip-8/assets/PONG.ch8"
-  fonts: "../chip-8/assets/chip8.font"
+  beep: "../Chip-8/assets/beep.mp3"
+  rom: "../Chip-8/assets/PONG.ch8"
+  fonts: "../Chip-8/assets/chip8.font"
 
 debug:
   on: "false"
@@ -71,7 +71,7 @@ test:
 By default it's going to execute a Pong game.  To change to another you can modify the line
 
 ```yml
- rom: "../chip-8/assets/PONG.ch8"
+ rom: "../Chip-8/assets/PONG.ch8"
 ```
 
 to a different relative root.

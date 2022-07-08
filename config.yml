@@ -1,7 +1,7 @@
 paths:
-  beep: "../chip-8/assets/beep.mp3"
-  rom: "../chip-8/assets/PONG.ch8"
-  fonts: "../chip-8/assets/chip8.font"
+  beep: "../Chip-8/assets/beep.mp3"
+  rom: "../Chip-8/assets/PONG.ch8"
+  fonts: "../Chip-8/assets/chip8.font"
 
 debug:
   on: "false"
