@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"github.com/NoetherianRing/Chip-8/app"
 	"github.com/NoetherianRing/Chip-8/config"
 	"github.com/faiface/pixel/pixelgl"
@@ -11,9 +10,7 @@ import (
 
 func run() {
 
-	filename := flag.String("config", "config.yml", "Location of the config file.")
-
-	f, err := os.Open(*filename)
+	f, err := os.Open("config.yml")
 	if err != nil {
 		panic(err)
 	}
