@@ -1,0 +1,19 @@
+paths:
+  beep: "../chip-8/assets/beep.mp3"
+  rom: "../chip-8/assets/PONG.ch8"
+  fonts: "../chip-8/assets/chip8.font"
+
+debug:
+  on: "false"
+  file: "DEBUG.json"
+
+test:
+  expectedStateROM1: "../fixtures/PONG.json"
+  expectedStateROM2: "../fixtures/IBM_Logo.json"
+  expectedStateROM3: "../fixtures/chip8_logo.json"
+  ROM1: "../assets/PONG.ch8"
+  ROM2: "../assets/IBM_Logo.ch8"
+  ROM3: "../assets/chip8_logo.ch8"
+  FONT: "../assets/chip8.font"
+
+
