@@ -6,6 +6,7 @@ Chip-8 is an interpreted programming language, developed by Joseph Weisbecker. I
 
 [Here's](https://en.wikipedia.org/wiki/CHIP-8) there is link to its wikipedia page, and [here's](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) a link to Cowgod's Chip-8 Technical Reference.
 
+This implementation uses faiface [pixel](https://github.com/faiface/pixel) for graphics and [beep](https://github.com/faiface/beep) for sound. 
 ## Requirements
 
 This Chip-8 emulator uses [PixelGL](https://github.com/faiface/pixel/blob/master/README.md) and PixelGL uses OpenGL to render graphics. Because of that, OpenGL development libraries are needed for compilation. The dependencies are same as for [GLFW](https://github.com/go-gl/glfw).
@@ -97,5 +98,6 @@ test:
   FONT: "../assets/chip8.font"
 
 ```
+It also can be tested by running the chip8-test-suite.ch8 ROM in the assets folder, it was taken from [Timendus](https://github.com/Timendus/chip8-test-suite) github. 
 
  
