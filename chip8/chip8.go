@@ -1,9 +1,9 @@
 package chip8
 
 import (
-	"chip-8/main/keyhandlers"
-	"chip-8/main/monitor"
-	"chip-8/main/state"
+	"github.com/NoetherianRing/Chip-8/keyhandlers"
+	"github.com/NoetherianRing/Chip-8/monitor"
+	"github.com/NoetherianRing/Chip-8/state"
 	"errors"
 	"os"
 )

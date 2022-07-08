@@ -1,8 +1,8 @@
 package state
 
 import (
-	"chip-8/main/keyhandlers"
-	"chip-8/main/monitor"
+	"github.com/NoetherianRing/Chip-8/keyhandlers"
+	"github.com/NoetherianRing/Chip-8/monitor"
 )
 
 //StateChip8 is used to save the state of the chip8 on every cycle when the app is running in debug mode,

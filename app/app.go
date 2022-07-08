@@ -1,11 +1,11 @@
 package app
 
 import (
-	"chip-8/main/chip8"
-	"chip-8/main/config"
-	"chip-8/main/keyhandlers"
-	"chip-8/main/monitor"
-	"chip-8/main/state"
+	"github.com/NoetherianRing/Chip-8/chip8"
+	"github.com/NoetherianRing/Chip-8/config"
+	"github.com/NoetherianRing/Chip-8/keyhandlers"
+	"github.com/NoetherianRing/Chip-8/monitor"
+	"github.com/NoetherianRing/Chip-8/state"
 	"encoding/json"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/mp3"

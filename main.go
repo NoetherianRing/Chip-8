@@ -1,8 +1,8 @@
 package main
 
 import (
-	"chip-8/main/app"
-	"chip-8/main/config"
+	"github.com/NoetherianRing/Chip-8/app"
+	"github.com/NoetherianRing/Chip-8/config"
 	"github.com/faiface/pixel/pixelgl"
 	"gopkg.in/yaml.v2"
 	"os"

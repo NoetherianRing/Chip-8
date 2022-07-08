@@ -1,8 +1,8 @@
 package chip8
 
 import (
-	"chip-8/main/config"
-	"chip-8/main/state"
+	"github.com/NoetherianRing/Chip-8/config"
+	"github.com/NoetherianRing/Chip-8/state"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"

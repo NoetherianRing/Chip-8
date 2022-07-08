@@ -1,4 +1,4 @@
-module chip-8/main
+module github.com/NoetherianRing/Chip-8
 
 go 1.17
 
