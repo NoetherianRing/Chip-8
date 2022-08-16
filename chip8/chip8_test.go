@@ -12,10 +12,10 @@ import (
 	"testing"
 )
 
-func ObtainConfig() config.Config{
+func ObtainConfig() config.Config {
 	f, err := os.Open("../config.yml")
 	defer f.Close()
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	decoder := yaml.NewDecoder(f)
@@ -26,16 +26,13 @@ func ObtainConfig() config.Config{
 	return cfg
 }
 
-func ObtainExpectedState(path string) []byte{
+func ObtainExpectedState(path string) []byte {
 	absPath, _ := filepath.Abs(path)
-
 
 	expectedResultROM, _ := ioutil.ReadFile(absPath)
 
-
 	return expectedResultROM
 }
-
 
 func TestChip8_LoadROM(t *testing.T) {
 	cfg := ObtainConfig()
@@ -53,7 +50,6 @@ func TestChip8_LoadROM(t *testing.T) {
 	assert.NoError(t, err, "error in LoadROM")
 
 	assert.Equal(t, expected[0].Memory[0x200:], c8.memory[0x200:], "ROM1")
-
 
 }
 

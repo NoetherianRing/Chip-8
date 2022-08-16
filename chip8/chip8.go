@@ -1,37 +1,36 @@
 package chip8
 
 import (
+	"errors"
 	"github.com/NoetherianRing/Chip-8/keyhandlers"
 	"github.com/NoetherianRing/Chip-8/monitor"
 	"github.com/NoetherianRing/Chip-8/state"
-	"errors"
 	"os"
 )
 
-type Chip8 struct{
-	memory		  [TotalMemory]byte  //The chip8 has 4096 memory cells.
-	registers 	  [NumberOfRegisters]byte //The chip8 has 16 registers.
-	pc 			  uint16 		 //ProgramCounter. It's an uint16 to be able to store each of the 4096 memory addresses
-								 //(There are some memory addresses too large to store in just 8 bits)
-	i   		  uint16 		 //Index Register. It's used to store memory addresses for use in operations.
-	stack 		  [StackLevels]uint16	//A stack is the way for the Chip8 to keep track of the order of execution when it calls into functions.
-										//It's an array of length 16 because there are 16 levels of nesting
-	sp 			  byte  		//stack pointer, to keep track of what nesting level the program is at.
+type Chip8 struct {
+	memory    [TotalMemory]byte       //The chip8 has 4096 memory cells.
+	registers [NumberOfRegisters]byte //The chip8 has 16 registers.
+	pc        uint16                  //ProgramCounter. It's an uint16 to be able to store each of the 4096 memory addresses
+	//(There are some memory addresses too large to store in just 8 bits)
+	i     uint16              //Index Register. It's used to store memory addresses for use in operations.
+	stack [StackLevels]uint16 //A stack is the way for the Chip8 to keep track of the order of execution when it calls into functions.
+	//It's an array of length 16 because there are 16 levels of nesting
+	sp byte //stack pointer, to keep track of what nesting level the program is at.
 
 	instructions map[uint16]func()
 	cOpcode      opcode                //current opcode
 	Keypad       keyhandlers.HexKeypad //The chip8 has a hex keyhandlers. It's public to be accessed by the peripherals.
-	frameBuffer 	monitor.FrameBuffer //The Chip8 has a monochromatic screen of 64x32 pixels. Each element of the FrameBuffer represents a pixel
-										//Each pixel can be on or off.
+	frameBuffer  monitor.FrameBuffer   //The Chip8 has a monochromatic screen of 64x32 pixels. Each element of the FrameBuffer represents a pixel
+	//Each pixel can be on or off.
 
-	delayTimer   byte
-	soundTimer   byte
-	MustDraw     bool
-	quit         bool
+	delayTimer byte
+	soundTimer byte
+	MustDraw   bool
+	quit       bool
 }
 
-
-func NewChip8() (*Chip8, error){
+func NewChip8() (*Chip8, error) {
 	c8 := &Chip8{
 		memory:       [TotalMemory]byte{},
 		registers:    [NumberOfRegisters]byte{},
@@ -40,7 +39,6 @@ func NewChip8() (*Chip8, error){
 		Keypad:       [NumberOfKeys]byte{},
 		frameBuffer:  monitor.FrameBuffer{},
 		instructions: map[uint16]func(){},
-
 	}
 
 	c8.instructions[0x00E0] = c8.I00E0
@@ -85,8 +83,9 @@ func NewChip8() (*Chip8, error){
 func (c8 *Chip8) LoadROM(filename string) error {
 	return loadFile(filename, MemoryForROM, PCStartAddress, &c8.memory)
 }
+
 //LoadFonts is called by an external app running chip8 to load a font file into memory
-func (c8 *Chip8) LoadFonts(filename string) error{
+func (c8 *Chip8) LoadFonts(filename string) error {
 	return loadFile(filename, MemoryForFonts, FontsetStartAddress, &c8.memory)
 }
 
@@ -98,11 +97,10 @@ func loadFile(filename string, maxCapacity int, startAddress int, dst *[TotalMem
 		return err
 	}
 	if len(file) > maxCapacity {
-		errS := "the ROM in '" + filename +"' exceeds the memory capacity of Chip-8."
+		errS := "the ROM in '" + filename + "' exceeds the memory capacity of Chip-8."
 		return errors.New(errS)
 	}
-	copy(dst[startAddress : ], file[ : ])
-
+	copy(dst[startAddress:], file[:])
 
 	return nil
 }
@@ -110,48 +108,48 @@ func loadFile(filename string, maxCapacity int, startAddress int, dst *[TotalMem
 //fetchOpcode takes half of the opcode from the current position of the program counter, and the other half from program counter + 1
 //this is because an opcode has 2 bytes and every memory cell only has 1 byte,
 //then our program counter moves two cells forward
-func (c8 *Chip8) fetchOpcode(){
-	c8.cOpcode = opcode(uint16(c8.memory[c8.pc]) << 8 | uint16(c8.memory[c8.pc + 1]))
+func (c8 *Chip8) fetchOpcode() {
+	c8.cOpcode = opcode(uint16(c8.memory[c8.pc])<<8 | uint16(c8.memory[c8.pc+1]))
 	c8.pc += 2
 }
 
 //executeOpcode decodes the ID of the current opcode, and then execute the corresponding instruction
-func (c8 *Chip8) executeOpcode(){
+func (c8 *Chip8) executeOpcode() {
 	id := c8.cOpcode.TakeOpcodeID()
-	if inst, ok := c8.instructions[id]; ok{
+	if inst, ok := c8.instructions[id]; ok {
 		inst()
 	}
 }
 
 //countBackDelayTimer. The chip8 has a delay timer which decreases in every cycle
-func (c8 *Chip8) countBackDelayTimer(){
-	if c8.delayTimer != 0{
+func (c8 *Chip8) countBackDelayTimer() {
+	if c8.delayTimer != 0 {
 		c8.delayTimer--
 	}
 }
 
 //countBackSoundTimer. The chip8 has a sound timer which decreases in every cycle
-func(c8 *Chip8) countBackSoundTimer(){
-	if c8.soundTimer != 0{
+func (c8 *Chip8) countBackSoundTimer() {
+	if c8.soundTimer != 0 {
 		c8.soundTimer--
 	}
 }
 
 //MustBeep. If the soundTimer != 0, the chip must make a beep.
-func(c8 *Chip8) MustBeep() bool{
-	if c8.soundTimer != 0{
+func (c8 *Chip8) MustBeep() bool {
+	if c8.soundTimer != 0 {
 		return true
-	}else{
+	} else {
 		return false
 	}
 }
 
 //GetFrameBuffer expose the FrameBuffer so it can be read by the monitor peripheral
-func (c8 *Chip8) GetFrameBuffer() monitor.FrameBuffer{
+func (c8 *Chip8) GetFrameBuffer() monitor.FrameBuffer {
 	return c8.frameBuffer
 }
 
-func (c8 *Chip8) IsClosed() bool{
+func (c8 *Chip8) IsClosed() bool {
 	return c8.quit
 }
 
@@ -162,7 +160,7 @@ func (c8 *Chip8) Close() {
 
 //Cycle can be call for an external app which manages the chip8 with certain frequency
 //In every cycle we read, decode and execute the current opcode and we move the program counter by two, the we count back the sound timer and the delay timer
-func (c8 *Chip8) Cycle(){
+func (c8 *Chip8) Cycle() {
 	c8.fetchOpcode()
 	c8.executeOpcode()
 	c8.countBackSoundTimer()
@@ -170,12 +168,12 @@ func (c8 *Chip8) Cycle(){
 }
 
 //Dump is used in the debug mode of the app, it dumps the state of the chip8 into a StateChip8 an return it
-func (c8 *Chip8) Dump() *state.StateChip8{
+func (c8 *Chip8) Dump() *state.StateChip8 {
 	s := new(state.StateChip8)
 	s.Memory = c8.memory
 	s.Registers = c8.registers
 	s.Pc = c8.pc
-	s.I= c8.i
+	s.I = c8.i
 	s.Stack = c8.stack
 	s.Sp = c8.sp
 	s.COpcode = uint16(c8.cOpcode)

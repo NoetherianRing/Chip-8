@@ -1,12 +1,12 @@
 package app
 
 import (
+	"encoding/json"
 	"github.com/NoetherianRing/Chip-8/chip8"
 	"github.com/NoetherianRing/Chip-8/config"
 	"github.com/NoetherianRing/Chip-8/keyhandlers"
 	"github.com/NoetherianRing/Chip-8/monitor"
 	"github.com/NoetherianRing/Chip-8/state"
-	"encoding/json"
 	"github.com/faiface/beep"
 	"github.com/faiface/beep/mp3"
 	"github.com/faiface/beep/speaker"
@@ -18,16 +18,15 @@ import (
 	"time"
 )
 
-
-type App struct{
-	c8 *chip8.Chip8
-	keypad keyhandlers.KeyHandler
-	keyboard keyhandlers.KeyHandler
-	m monitor.Monitor
-	beepFile *os.File
+type App struct {
+	c8           *chip8.Chip8
+	keypad       keyhandlers.KeyHandler
+	keyboard     keyhandlers.KeyHandler
+	m            monitor.Monitor
+	beepFile     *os.File
 	beepStreamer beep.StreamSeekCloser
-	cfg config.Config
-	window *pixelgl.Window
+	cfg          config.Config
+	window       *pixelgl.Window
 }
 
 //NewApp instantiates the App in which the chip8 is going to run.
@@ -36,19 +35,20 @@ type App struct{
 //and the peripherals: a monitor(m) which draws the FrameBuffer of the chip 8, a keypad  which manages all the inputs of the chip8,
 //and a keyboard which manages the inputs of the app (in this case we only use it to quit when we press Esc., a key which is not used by chip8 ROM files).
 //NewApp also load the fonts file given in the configuration.
-func NewApp(cfg config.Config) (*App, error){
+func NewApp(cfg config.Config) (*App, error) {
 	myApp := new(App)
 	var err error
 	myApp.cfg = cfg
 	myApp.c8, err = chip8.NewChip8()
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	cfgPixel := pixelgl.WindowConfig{
-		Title:  "Chip-8",
-		Bounds: pixel.R(0, 0, monitor.WidthScreen, monitor.HeightScreen),
-		VSync:  true,
+		Title:       "Chip-8",
+		Bounds:      pixel.R(0, 0, monitor.WidthScreen, monitor.HeightScreen),
+		VSync:       true,
+		Undecorated: true,
 	}
 
 	myApp.window, err = pixelgl.NewWindow(cfgPixel)
@@ -58,12 +58,12 @@ func NewApp(cfg config.Config) (*App, error){
 
 	absPathBeep, err := filepath.Abs(cfg.Paths.Beep)
 
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	myApp.m = monitor.NewMonitor(myApp.window)
 	myApp.beepFile, err = os.Open(absPathBeep)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -81,22 +81,22 @@ func NewApp(cfg config.Config) (*App, error){
 
 	myApp.c8, err = chip8.NewChip8()
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
 	cmdKeypad := make(keyhandlers.Cmd)
 
-	for k, v := range keyhandlers.KeyboardToKeypad{
+	for k, v := range keyhandlers.KeyboardToKeypad {
 		newKey := v
-		cmdKeypad[k] = func(){
+		cmdKeypad[k] = func() {
 			myApp.c8.Keypad[newKey] = 1
 		}
 	}
 	myApp.keypad = keyhandlers.NewKeyHandler(myApp.window, &cmdKeypad)
 
 	cmdKeyboard := make(keyhandlers.Cmd)
-	cmdKeyboard[pixelgl.KeyEscape] =  func(){
+	cmdKeyboard[pixelgl.KeyEscape] = func() {
 		myApp.c8.Close()
 		defer myApp.beepFile.Close()
 		defer myApp.beepStreamer.Close()
@@ -104,7 +104,7 @@ func NewApp(cfg config.Config) (*App, error){
 	myApp.keyboard = keyhandlers.NewKeyHandler(myApp.window, &cmdKeyboard)
 
 	absPathFonts, err := filepath.Abs(cfg.Paths.Fonts)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	err = myApp.c8.LoadFonts(absPathFonts)
@@ -118,9 +118,9 @@ func NewApp(cfg config.Config) (*App, error){
 
 //Run loads the ROM given in the configuration into the chip8,
 //then runs the chip8 making a distinction if the configuration indicates whether the application should run in debug mode.
-func (myApp *App) Run(){
+func (myApp *App) Run() {
 	absPathRom, err := filepath.Abs(myApp.cfg.Paths.Rom)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 
@@ -129,27 +129,28 @@ func (myApp *App) Run(){
 		panic(err)
 	}
 
-	if myApp.cfg.Debug.On == "true"{
+	if myApp.cfg.Debug.On == "true" {
 		myApp.debugChip8()
-	}else{
+	} else {
 		myApp.runChip8()
 	}
 }
 
 //runChip8 executes the chip8 Cycle with a certain frequency and manages the peripherals.
-func (myApp *App) runChip8(){
+func (myApp *App) runChip8() {
 	clock := time.NewTicker(chip8.Frequency)
 
-	for{
-		select{
-		case <- clock.C: {
-			myApp.c8.Cycle()
-			if myApp.c8.IsClosed() {
-				return
-			}
-			myApp.managePeripherals()
+	for {
+		select {
+		case <-clock.C:
+			{
+				myApp.c8.Cycle()
+				if myApp.c8.IsClosed() {
+					return
+				}
+				myApp.managePeripherals()
 
-		}
+			}
 		}
 
 	}
@@ -157,18 +158,18 @@ func (myApp *App) runChip8(){
 
 //debugChip8 does the same that runChip8 with the distinction it use another frequency and save the state of the chip8 in every cycle
 //to store it into a json file
-func (myApp *App) debugChip8(){
+func (myApp *App) debugChip8() {
 	clock := time.NewTicker(chip8.FrequencyDebugMode)
 
 	_, err := os.Create(myApp.cfg.Debug.File)
 
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 
 	var sChip8 []state.StateChip8
 
-	for{
+	for {
 		select {
 		case <-clock.C:
 			{
@@ -201,7 +202,7 @@ func (myApp *App) managePeripherals() {
 
 		myApp.m.ToDraw(myApp.c8.GetFrameBuffer())
 	}
-	if myApp.c8.MustBeep(){
+	if myApp.c8.MustBeep() {
 		speaker.Play(myApp.beepStreamer)
 		_ = myApp.beepStreamer.Seek(0)
 

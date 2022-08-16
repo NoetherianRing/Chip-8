@@ -1,9 +1,8 @@
 package chip8
 
 import (
-	"testing"
 	"github.com/stretchr/testify/assert"
-
+	"testing"
 )
 
 func TestOpcode_TakeOpcodeID(t *testing.T) {

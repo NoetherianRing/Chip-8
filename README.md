@@ -61,7 +61,7 @@ test:
 
 #### ROM Files
 
-By default it's going to execute a Pong game.  To change to another you can modify the line
+By default it's going to execute a Pong game.  To change it to another you can modify the line
 
 ```yml
  rom: "../Chip-8/assets/PONG.ch8"
@@ -71,8 +71,7 @@ to a different relative root.
 
 #### Debug mode
 
-The debug mode runs the chip8 taking the state of the chip in every cycle and saving it into a json file whith the name specify in the field "file".
-
+The debug mode runs the chip8 taking the state of the chip in every cycle and saving it into a json file with the name specified in the field "file".
 It can be activated modifying the config.yml file this way:
 
 ```yml
@@ -100,4 +99,17 @@ test:
 ```
 It also can be tested by running the chip8-test-suite.ch8 ROM in the assets folder, it was taken from [Timendus](https://github.com/Timendus/chip8-test-suite) github. 
 
- 
+## Keys
+
+To quit the app you need to press the key Esc. 
+
+Here is the list of the keys mapping for the Chip 8:
+
+
+|        KEYPAD          |       KEYBOARD      |
+| :--------------------: | :-----------------: |
+|        1 2 3 C         |       1 2 3 4       |
+|        4 5 6 D         |       Q W E R       |
+|        7 8 9 E         |       A S D F       |
+|        A 0 B F         |       Z X C V       |
+

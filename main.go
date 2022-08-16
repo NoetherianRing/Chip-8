@@ -23,11 +23,11 @@ func run() {
 	}
 
 	myApp, err := app.NewApp(cfg)
-	if err != nil{
+	if err != nil {
 		panic(err)
 	}
 	myApp.Run()
 }
-func main(){
+func main() {
 	pixelgl.Run(run)
 }
