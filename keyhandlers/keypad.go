@@ -2,12 +2,13 @@ package keyhandlers
 
 import (
 	"github.com/faiface/pixel/pixelgl"
+	"time"
 )
 
 type HexKeypad [16]byte
 
 type KeyHandler interface {
-	ExecuteInputs()
+	ExecuteInputs(chan bool)
 }
 type keyHandler struct {
 	*pixelgl.Window
@@ -50,12 +51,17 @@ func NewKeyHandler(window *pixelgl.Window, cmd *Cmd) KeyHandler {
 }
 
 //ExecuteInputs checks which keys of the command map have been pressed and executes them
-func (kHandler *keyHandler) ExecuteInputs() {
-	for key, c := range *kHandler.cmd {
-		if kHandler.JustPressed(key) {
-			c()
-		}
+func (kHandler *keyHandler) ExecuteInputs(out chan bool) {
+	for true{
+		for key, c := range *kHandler.cmd {
+			if kHandler.JustPressed(key) {
+				c()
 
+				out <- true
+				time.Sleep((time.Second / time.Duration(500))*2)
+			}
+
+		}
 	}
 
 }

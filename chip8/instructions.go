@@ -89,7 +89,9 @@ func (c8 *Chip8) I8XY2() {
 
 //I8XY3 XOR (VX, VY)
 func (c8 *Chip8) I8XY3() {
-	c8.registers[c8.cOpcode.X()] ^= c8.registers[c8.cOpcode.Y()]
+	x:= c8.cOpcode.X()
+	y := c8.cOpcode.Y()
+	c8.registers[x] ^= c8.registers[y]
 
 }
 
@@ -109,7 +111,9 @@ func (c8 *Chip8) I8XY4() { //ADD (VS, VY)
 
 //f Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
 func (c8 *Chip8) I8XY5() { //SUB (VX, VY)
-	if c8.registers[c8.cOpcode.X()] > c8.registers[c8.cOpcode.Y()] {
+	x:= c8.cOpcode.X()
+	y := c8.cOpcode.Y()
+	if c8.registers[x] > c8.registers[y] {
 		c8.registers[0xF] = 1
 	} else {
 		c8.registers[0xF] = 0
@@ -239,12 +243,22 @@ func (c8 *Chip8) IFX07() { //LD (Vx, DT)
 
 //IFX0A Wait for a key press, store the value of the key in Vx.
 func (c8 *Chip8) IFX0A() { //LD (Vx, K)
-	for i, isPress := range c8.Keypad {
-		if isPress != 0 {
-			c8.registers[c8.cOpcode.X()] = byte(i)
+	for true{
+		select{
+		case <-c8.KeyPressed:
+			for i, isPress := range c8.Keypad {
+				if isPress != 0 {
+					c8.registers[c8.cOpcode.X()] = byte(i)
+					c8.Keypad[i] = 0
+					return
+				}
+			}
 			return
+
 		}
+
 	}
+
 }
 
 //IFX15 Set delay timer = Vx
@@ -290,4 +304,19 @@ func (c8 *Chip8) IFX65() { //LD (Vx, I)
 	for k := 0; k <= int(c8.cOpcode.X()); k++ {
 		c8.registers[k] = c8.memory[c8.i+uint16(k)]
 	}
+}
+
+//I9XY1 save vx in the first 8 bits of i and vy in the las 8.
+//This instruction is part of our extended instruction set, required for the c8-compiler
+func (c8 *Chip8) I9XY1() {
+	c8.i = uint16(c8.registers[c8.cOpcode.X()]) <<8 | uint16(c8.registers[c8.cOpcode.Y() ])
+
+}
+
+//I9XY2 save the first 8 bits of i in vx, and the last 8 bits in vy
+//This instruction is part of our extended instruction set, required for the c8-compiler
+func (c8 *Chip8) I9XY2() {
+	c8.registers[c8.cOpcode.X()] = byte(c8.i >> 8)
+	c8.registers[c8.cOpcode.Y()] = byte(c8.i)
+
 }

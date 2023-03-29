@@ -27,6 +27,7 @@ type App struct {
 	beepStreamer beep.StreamSeekCloser
 	cfg          config.Config
 	window       *pixelgl.Window
+	channel 	 chan bool
 }
 
 //NewApp instantiates the App in which the chip8 is going to run.
@@ -39,7 +40,8 @@ func NewApp(cfg config.Config) (*App, error) {
 	myApp := new(App)
 	var err error
 	myApp.cfg = cfg
-	myApp.c8, err = chip8.NewChip8()
+	myApp.channel = make(chan bool)
+	myApp.c8, err = chip8.NewChip8(myApp.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -79,18 +81,14 @@ func NewApp(cfg config.Config) (*App, error) {
 		format.SampleRate.N(time.Second/10),
 	)
 
-	myApp.c8, err = chip8.NewChip8()
-
-	if err != nil {
-		return nil, err
-	}
 
 	cmdKeypad := make(keyhandlers.Cmd)
 
 	for k, v := range keyhandlers.KeyboardToKeypad {
 		newKey := v
 		cmdKeypad[k] = func() {
-			myApp.c8.Keypad[newKey] = 1
+				myApp.c8.Keypad[newKey] ^= 1
+
 		}
 	}
 	myApp.keypad = keyhandlers.NewKeyHandler(myApp.window, &cmdKeypad)
@@ -128,7 +126,8 @@ func (myApp *App) Run() {
 	if err != nil {
 		panic(err)
 	}
-
+	go myApp.keyboard.ExecuteInputs(myApp.channel)
+	go myApp.keypad.ExecuteInputs(myApp.channel)
 	if myApp.cfg.Debug.On == "true" {
 		myApp.debugChip8()
 	} else {
@@ -138,8 +137,16 @@ func (myApp *App) Run() {
 
 //runChip8 executes the chip8 Cycle with a certain frequency and manages the peripherals.
 func (myApp *App) runChip8() {
-	clock := time.NewTicker(chip8.Frequency)
+	go myApp.cycle()
+	for !myApp.c8.IsClosed(){
+		myApp.update()
 
+	}
+}
+
+func (myApp *App) cycle(){
+
+	clock := time.NewTicker(chip8.Frequency)
 	for {
 		select {
 		case <-clock.C:
@@ -148,7 +155,6 @@ func (myApp *App) runChip8() {
 				if myApp.c8.IsClosed() {
 					return
 				}
-				myApp.managePeripherals()
 
 			}
 		}
@@ -167,7 +173,12 @@ func (myApp *App) debugChip8() {
 		panic(err)
 	}
 
+
 	var sChip8 []state.StateChip8
+	for {
+		myApp.update()
+
+	}
 
 	for {
 		select {
@@ -177,7 +188,6 @@ func (myApp *App) debugChip8() {
 				if myApp.c8.IsClosed() {
 					return
 				}
-				myApp.managePeripherals()
 				sChip8 = append(sChip8, *myApp.c8.Dump())
 				stateBytes, err := json.Marshal(sChip8)
 
@@ -194,8 +204,8 @@ func (myApp *App) debugChip8() {
 	}
 }
 
-//managePeripherals draws and beeps if it's needed, and executes the inputs.
-func (myApp *App) managePeripherals() {
+//update draws and beeps if it's needed, and executes the inputs.
+func (myApp *App) update() {
 
 	if myApp.c8.MustDraw {
 		myApp.c8.MustDraw = false
@@ -207,7 +217,6 @@ func (myApp *App) managePeripherals() {
 		_ = myApp.beepStreamer.Seek(0)
 
 	}
-	myApp.keyboard.ExecuteInputs()
-	myApp.keypad.ExecuteInputs()
+
 	myApp.window.Update()
 }
