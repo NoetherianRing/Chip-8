@@ -219,21 +219,32 @@ func (c8 *Chip8) IDXYN() { // DRW (Vx, Vy, hSprite)
 //IEX9E Skip next instruction if key with the value of Vx is pressed.
 func (c8 *Chip8) IEX9E() { //SKP(VX)
 	key := c8.registers[c8.cOpcode.X()]
-	if c8.Keypad[key] == 1 {
-		c8.pc += 2
-		c8.Keypad[key] = 0
+	select {
+		case keyPressed:=<-c8.keyPressed:
+			if keyPressed == key{
+				c8.pc += 2
+			}
+		default:
+			return
 	}
+
 
 }
 
 //IEXA1 Skip next instruction if key with the value of Vx is not pressed.
 func (c8 *Chip8) IEXA1() { //SKP(VX)
 	key := c8.registers[c8.cOpcode.X()]
-	if c8.Keypad[key] != 1 {
+	select {
+	case keyPressed:=<-c8.keyPressed:
+		if keyPressed == key{
+			return
+		}
 		c8.pc += 2
-	} else {
-		c8.Keypad[key] = 0
+	default:
+		c8.pc += 2
+
 	}
+
 }
 
 //IFX07 Set Vx = delay timer value.
@@ -243,17 +254,13 @@ func (c8 *Chip8) IFX07() { //LD (Vx, DT)
 
 //IFX0A Wait for a key press, store the value of the key in Vx.
 func (c8 *Chip8) IFX0A() { //LD (Vx, K)
-	for true{
+	for {
 		select{
-		case <-c8.KeyPressed:
-			for i, isPress := range c8.Keypad {
-				if isPress != 0 {
-					c8.registers[c8.cOpcode.X()] = byte(i)
-					c8.Keypad[i] = 0
-					return
-				}
+		case key:=<-c8.keyPressed:
+			if key <= NumberOfKeys || key ==AsciiEscape{
+				c8.registers[c8.cOpcode.X()] = key
+				return
 			}
-			return
 
 		}
 

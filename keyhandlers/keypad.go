@@ -8,7 +8,7 @@ import (
 type HexKeypad [16]byte
 
 type KeyHandler interface {
-	ExecuteInputs(chan bool)
+	ExecuteInputs()
 }
 type keyHandler struct {
 	*pixelgl.Window
@@ -51,17 +51,22 @@ func NewKeyHandler(window *pixelgl.Window, cmd *Cmd) KeyHandler {
 }
 
 //ExecuteInputs checks which keys of the command map have been pressed and executes them
-func (kHandler *keyHandler) ExecuteInputs(out chan bool) {
+func (kHandler *keyHandler) ExecuteInputs() {
 	for true{
-		for key, c := range *kHandler.cmd {
-			if kHandler.JustPressed(key) {
-				c()
+		clock := time.NewTicker((time.Second / time.Duration(500))*2)
+		select {
+		case <-clock.C:
+			{
+				for key, c := range *kHandler.cmd {
+					if kHandler.JustPressed(key) {
+						c()
 
-				out <- true
-				time.Sleep((time.Second / time.Duration(500))*2)
+					}
+
+				}
 			}
-
 		}
+
 	}
 
 }

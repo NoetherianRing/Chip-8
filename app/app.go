@@ -27,7 +27,7 @@ type App struct {
 	beepStreamer beep.StreamSeekCloser
 	cfg          config.Config
 	window       *pixelgl.Window
-	channel 	 chan bool
+	channel 	 chan byte
 }
 
 //NewApp instantiates the App in which the chip8 is going to run.
@@ -40,7 +40,7 @@ func NewApp(cfg config.Config) (*App, error) {
 	myApp := new(App)
 	var err error
 	myApp.cfg = cfg
-	myApp.channel = make(chan bool)
+	myApp.channel = make(chan byte, 10)
 	myApp.c8, err = chip8.NewChip8(myApp.channel)
 	if err != nil {
 		return nil, err
@@ -87,14 +87,14 @@ func NewApp(cfg config.Config) (*App, error) {
 	for k, v := range keyhandlers.KeyboardToKeypad {
 		newKey := v
 		cmdKeypad[k] = func() {
-				myApp.c8.Keypad[newKey] ^= 1
-
+				myApp.channel <- newKey
 		}
 	}
 	myApp.keypad = keyhandlers.NewKeyHandler(myApp.window, &cmdKeypad)
 
 	cmdKeyboard := make(keyhandlers.Cmd)
 	cmdKeyboard[pixelgl.KeyEscape] = func() {
+		myApp.channel <- chip8.AsciiEscape
 		myApp.c8.Close()
 		defer myApp.beepFile.Close()
 		defer myApp.beepStreamer.Close()
@@ -126,8 +126,6 @@ func (myApp *App) Run() {
 	if err != nil {
 		panic(err)
 	}
-	go myApp.keyboard.ExecuteInputs(myApp.channel)
-	go myApp.keypad.ExecuteInputs(myApp.channel)
 	if myApp.cfg.Debug.On == "true" {
 		myApp.debugChip8()
 	} else {
@@ -137,24 +135,23 @@ func (myApp *App) Run() {
 
 //runChip8 executes the chip8 Cycle with a certain frequency and manages the peripherals.
 func (myApp *App) runChip8() {
+	go myApp.keyboard.ExecuteInputs()
+	go myApp.keypad.ExecuteInputs()
 	go myApp.cycle()
-	for !myApp.c8.IsClosed(){
-		myApp.update()
+	myApp.update()
 
-	}
+
 }
 
 func (myApp *App) cycle(){
 
 	clock := time.NewTicker(chip8.Frequency)
-	for {
+	for !myApp.c8.IsClosed() {
 		select {
 		case <-clock.C:
 			{
 				myApp.c8.Cycle()
-				if myApp.c8.IsClosed() {
-					return
-				}
+
 
 			}
 		}
@@ -206,17 +203,27 @@ func (myApp *App) debugChip8() {
 
 //update draws and beeps if it's needed, and executes the inputs.
 func (myApp *App) update() {
+	clock := time.NewTicker(chip8.Frequency)
 
-	if myApp.c8.MustDraw {
-		myApp.c8.MustDraw = false
+	for !myApp.c8.IsClosed() {
+		select {
+		case <-clock.C:
+			{
+				if myApp.c8.MustDraw {
+					myApp.c8.MustDraw = false
 
-		myApp.m.ToDraw(myApp.c8.GetFrameBuffer())
+					myApp.m.ToDraw(myApp.c8.GetFrameBuffer())
+				}
+				if myApp.c8.MustBeep() {
+					speaker.Play(myApp.beepStreamer)
+					_ = myApp.beepStreamer.Seek(0)
+
+				}
+
+				myApp.window.Update()
+
+			}
+
+		}
 	}
-	if myApp.c8.MustBeep() {
-		speaker.Play(myApp.beepStreamer)
-		_ = myApp.beepStreamer.Seek(0)
-
-	}
-
-	myApp.window.Update()
 }

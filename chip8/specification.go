@@ -19,4 +19,5 @@ const (
 	FrequencyDebugMode = time.Second / time.Duration(500000) //In debug mode the frequency must be smaller, because it's a slower mode
 	WidthScreen        = 64
 	HeightScreen       = 32
+	AsciiEscape		   = 0x1B
 )

@@ -2,8 +2,6 @@ package chip8
 
 import (
 	"errors"
-	"fmt"
-	"github.com/NoetherianRing/Chip-8/keyhandlers"
 	"github.com/NoetherianRing/Chip-8/monitor"
 	"github.com/NoetherianRing/Chip-8/state"
 	"os"
@@ -20,10 +18,9 @@ type Chip8 struct {
 	sp byte //stack pointer, to keep track of what nesting level the program is at.
 
 	instructions map[uint16]func()
-	cOpcode      opcode                //current opcode
-	Keypad       keyhandlers.HexKeypad //The chip8 has a hex keyhandlers. It's public to be accessed by the peripherals.
-	KeyPressed   chan bool//The chip8 has a hex keyhandlers. It's public to be accessed by the peripherals.
-	frameBuffer  monitor.FrameBuffer   //The Chip8 has a monochromatic screen of 64x32 pixels. Each element of the FrameBuffer represents a pixel
+	cOpcode      opcode              //current opcode
+	keyPressed   chan byte           //The chip8 has a hex keypad. The channel is acceded by the peripherals and represents the key that was just pressed
+	frameBuffer  monitor.FrameBuffer //The Chip8 has a monochromatic screen of 64x32 pixels. Each element of the FrameBuffer represents a pixel
 	//Each pixel can be on or off.
 
 	delayTimer byte
@@ -32,18 +29,17 @@ type Chip8 struct {
 	quit       bool
 }
 
-func NewChip8(keyPressed chan bool) (*Chip8, error) {
+func NewChip8(keyPressed chan byte) (*Chip8, error) {
 	c8 := &Chip8{
 		memory:       [TotalMemory]byte{},
 		registers:    [NumberOfRegisters]byte{},
 		pc:           PCStartAddress,
 		stack:        [StackLevels]uint16{},
-		Keypad:       [NumberOfKeys]byte{},
 		frameBuffer:  monitor.FrameBuffer{},
 		instructions: map[uint16]func(){},
 	}
 
-	c8.KeyPressed = keyPressed
+	c8.keyPressed = keyPressed
 	c8.instructions[0x00E0] = c8.I00E0
 	c8.instructions[0x00EE] = c8.I00EE
 	c8.instructions[0x1000] = c8.I1NNN
@@ -116,7 +112,6 @@ func loadFile(filename string, maxCapacity int, startAddress int, dst *[TotalMem
 //then our program counter moves two cells forward
 func (c8 *Chip8) fetchOpcode() {
 	c8.cOpcode = opcode(uint16(c8.memory[c8.pc])<<8 | uint16(c8.memory[c8.pc+1]))
-	fmt.Printf("%x\n", c8.cOpcode)
 	c8.pc += 2
 }
 
@@ -177,7 +172,7 @@ func (c8 *Chip8) Cycle() {
 //Dump is used in the debug mode of the app, it dumps the state of the chip8 into a StateChip8 an return it
 func (c8 *Chip8) Dump() *state.StateChip8 {
 	s := new(state.StateChip8)
-	array := [4096]byte{}
+	array := [400096]byte{}
 	s.Memory = array//c8.memory
 	s.Registers = c8.registers
 	s.Pc = c8.pc
@@ -185,7 +180,7 @@ func (c8 *Chip8) Dump() *state.StateChip8 {
 	s.Stack = c8.stack
 	s.Sp = c8.sp
 	s.COpcode = uint16(c8.cOpcode)
-	s.Keypad = c8.Keypad
+	s.KeyPressed = c8.keyPressed
 	s.FrameBuffer = c8.frameBuffer
 	s.DelayTimer = c8.delayTimer
 	s.SoundTimer = c8.soundTimer
