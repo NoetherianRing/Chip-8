@@ -40,7 +40,7 @@ func NewApp(cfg config.Config) (*App, error) {
 	myApp := new(App)
 	var err error
 	myApp.cfg = cfg
-	myApp.channel = make(chan byte, 10)
+	myApp.channel = make(chan byte)
 	myApp.c8, err = chip8.NewChip8(myApp.channel)
 	if err != nil {
 		return nil, err
@@ -94,10 +94,11 @@ func NewApp(cfg config.Config) (*App, error) {
 
 	cmdKeyboard := make(keyhandlers.Cmd)
 	cmdKeyboard[pixelgl.KeyEscape] = func() {
-		myApp.channel <- chip8.AsciiEscape
 		myApp.c8.Close()
 		defer myApp.beepFile.Close()
 		defer myApp.beepStreamer.Close()
+		myApp.channel <- chip8.AsciiEscape
+
 	}
 	myApp.keyboard = keyhandlers.NewKeyHandler(myApp.window, &cmdKeyboard)
 

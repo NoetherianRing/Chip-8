@@ -7,6 +7,7 @@ import (
 //I00E0 clears the myMonitor
 func (c8 *Chip8) I00E0() { //CLS
 	c8.frameBuffer = [64 * 32]byte{}
+	c8.MustDraw = true
 }
 
 //I00EE returns from a subroutine
@@ -224,6 +225,7 @@ func (c8 *Chip8) IEX9E() { //SKP(VX)
 			if keyPressed == key{
 				c8.pc += 2
 			}
+			return
 		default:
 			return
 	}
