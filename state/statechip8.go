@@ -14,7 +14,6 @@ type StateChip8 struct {
 	Stack       [16]uint16
 	Sp          byte
 	COpcode     uint16
-	KeyPressed  chan byte
 	FrameBuffer monitor.FrameBuffer
 	DelayTimer  byte
 	SoundTimer  byte

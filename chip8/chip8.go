@@ -121,6 +121,7 @@ func (c8 *Chip8) executeOpcode() {
 	if inst, ok := c8.instructions[id]; ok {
 		inst()
 	}
+
 }
 
 //countBackDelayTimer. The chip8 has a delay timer which decreases in every cycle
@@ -180,7 +181,6 @@ func (c8 *Chip8) Dump() *state.StateChip8 {
 	s.Stack = c8.stack
 	s.Sp = c8.sp
 	s.COpcode = uint16(c8.cOpcode)
-	s.KeyPressed = c8.keyPressed
 	s.FrameBuffer = c8.frameBuffer
 	s.DelayTimer = c8.delayTimer
 	s.SoundTimer = c8.soundTimer

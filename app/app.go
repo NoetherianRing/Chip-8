@@ -40,7 +40,7 @@ func NewApp(cfg config.Config) (*App, error) {
 	myApp := new(App)
 	var err error
 	myApp.cfg = cfg
-	myApp.channel = make(chan byte)
+	myApp.channel = make(chan byte, 4)
 	myApp.c8, err = chip8.NewChip8(myApp.channel)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,6 @@ func (myApp *App) cycle(){
 //debugChip8 does the same that runChip8 with the distinction it use another frequency and save the state of the chip8 in every cycle
 //to store it into a json file
 func (myApp *App) debugChip8() {
-	clock := time.NewTicker(chip8.FrequencyDebugMode)
 
 	_, err := os.Create(myApp.cfg.Debug.File)
 
@@ -172,11 +171,16 @@ func (myApp *App) debugChip8() {
 	}
 
 
-	var sChip8 []state.StateChip8
+	go myApp.cycleDebug()
 	for {
 		myApp.update()
 
 	}
+
+}
+func (myApp *App) cycleDebug(){
+	clock := time.NewTicker(chip8.FrequencyDebugMode)
+	var sChip8 []state.StateChip8
 
 	for {
 		select {

@@ -177,7 +177,6 @@ func (c8 *Chip8) ICXKK() { // RND Vx, byte
 func (c8 *Chip8) IDXYN() { // DRW (Vx, Vy, hSprite)
 	vx := c8.registers[c8.cOpcode.X()]
 	vy := c8.registers[c8.cOpcode.Y()]
-
 	//If a sprite is attempting to draw outside the bounds of the screen,
 	//it wraps around to the other side, that's why we do x0 = vx % width, y0 = vy % height.
 	x0 := int(vx % WidthScreen)
@@ -188,6 +187,7 @@ func (c8 *Chip8) IDXYN() { // DRW (Vx, Vy, hSprite)
 	i := int(c8.i)
 	var _byte byte
 	var bit byte
+	c8.registers[0xF] = 0
 
 	for y := 0; y < hSprite; y++ {
 		_byte = c8.memory[i+y]
@@ -205,14 +205,16 @@ func (c8 *Chip8) IDXYN() { // DRW (Vx, Vy, hSprite)
 				} else {
 					cellFrameBuffer := c8.frameBuffer.Get(x0+x, y0+y)
 					if *cellFrameBuffer == 1 {
-						c8.registers[0xF] = 0xFF
+						c8.registers[0xF] = 1
 					}
-					*cellFrameBuffer ^= 0xFF
+
+					*cellFrameBuffer ^= 1
 				}
 
 			}
 		}
 	}
+
 	c8.MustDraw = true
 
 }
