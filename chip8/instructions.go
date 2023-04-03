@@ -317,7 +317,7 @@ func (c8 *Chip8) IFX65() { //LD (Vx, I)
 	}
 }
 
-//I9XY1 save vx in the first 8 bits of i and vy in the las 8.
+//I9XY1 save vx in the first 8 bits of i and vy in the last 8.
 //This instruction is part of our extended instruction set, required for the c8-compiler
 func (c8 *Chip8) I9XY1() {
 	c8.i = uint16(c8.registers[c8.cOpcode.X()]) <<8 | uint16(c8.registers[c8.cOpcode.Y() ])
