@@ -10,7 +10,7 @@ This implementation uses faiface [pixel](https://github.com/faiface/pixel) for g
 
 
 
-##Additional Memory and Instructions
+## Additional Memory and Instructions
 
 This emulator supports more memory than the original Chip 8 system, allowing you to run games and programs that require more memory. In addition, we have added two more instructions to the original set to enhance the compatibility with ROMs files generated with the "c8-compiler".
 
