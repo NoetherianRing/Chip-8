@@ -174,7 +174,7 @@ func (c8 *Chip8) Cycle() {
 func (c8 *Chip8) Dump() *state.StateChip8 {
 	s := new(state.StateChip8)
 	array := [400096]byte{}
-	s.Memory = array//c8.memory
+	s.Memory = array //c8.memory
 	s.Registers = c8.registers
 	s.Pc = c8.pc
 	s.I = c8.i

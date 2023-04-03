@@ -90,7 +90,7 @@ func (c8 *Chip8) I8XY2() {
 
 //I8XY3 XOR (VX, VY)
 func (c8 *Chip8) I8XY3() {
-	x:= c8.cOpcode.X()
+	x := c8.cOpcode.X()
 	y := c8.cOpcode.Y()
 	c8.registers[x] ^= c8.registers[y]
 
@@ -112,7 +112,7 @@ func (c8 *Chip8) I8XY4() { //ADD (VS, VY)
 
 //f Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and the results stored in Vx.
 func (c8 *Chip8) I8XY5() { //SUB (VX, VY)
-	x:= c8.cOpcode.X()
+	x := c8.cOpcode.X()
 	y := c8.cOpcode.Y()
 	if c8.registers[x] > c8.registers[y] {
 		c8.registers[0xF] = 1
@@ -223,15 +223,14 @@ func (c8 *Chip8) IDXYN() { // DRW (Vx, Vy, hSprite)
 func (c8 *Chip8) IEX9E() { //SKP(VX)
 	key := c8.registers[c8.cOpcode.X()]
 	select {
-		case keyPressed:=<-c8.keyPressed:
-			if keyPressed == key{
-				c8.pc += 2
-			}
-			return
-		default:
-			return
+	case keyPressed := <-c8.keyPressed:
+		if keyPressed == key {
+			c8.pc += 2
+		}
+		return
+	default:
+		return
 	}
-
 
 }
 
@@ -239,8 +238,8 @@ func (c8 *Chip8) IEX9E() { //SKP(VX)
 func (c8 *Chip8) IEXA1() { //SKP(VX)
 	key := c8.registers[c8.cOpcode.X()]
 	select {
-	case keyPressed:=<-c8.keyPressed:
-		if keyPressed == key{
+	case keyPressed := <-c8.keyPressed:
+		if keyPressed == key {
 			return
 		}
 		c8.pc += 2
@@ -259,9 +258,9 @@ func (c8 *Chip8) IFX07() { //LD (Vx, DT)
 //IFX0A Wait for a key press, store the value of the key in Vx.
 func (c8 *Chip8) IFX0A() { //LD (Vx, K)
 	for {
-		select{
-		case key:=<-c8.keyPressed:
-			if key <= NumberOfKeys || key ==AsciiEscape{
+		select {
+		case key := <-c8.keyPressed:
+			if key <= NumberOfKeys || key == AsciiEscape {
 				c8.registers[c8.cOpcode.X()] = key
 				return
 			}
@@ -320,7 +319,7 @@ func (c8 *Chip8) IFX65() { //LD (Vx, I)
 //I9XY1 save vx in the first 8 bits of i and vy in the last 8.
 //This instruction is part of our extended instruction set, required for the c8-compiler
 func (c8 *Chip8) I9XY1() {
-	c8.i = uint16(c8.registers[c8.cOpcode.X()]) <<8 | uint16(c8.registers[c8.cOpcode.Y() ])
+	c8.i = uint16(c8.registers[c8.cOpcode.X()])<<8 | uint16(c8.registers[c8.cOpcode.Y()])
 
 }
 

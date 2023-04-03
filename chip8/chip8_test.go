@@ -49,7 +49,7 @@ func TestChip8_LoadROM(t *testing.T) {
 	err = c8.LoadROM(absPath)
 	assert.NoError(t, err, "error in LoadROM")
 
-//	assert.Equal(t, expected[0].Memory[0x200:], c8.memory[0x200:], "ROM1")
+	//	assert.Equal(t, expected[0].Memory[0x200:], c8.memory[0x200:], "ROM1")
 
 }
 
@@ -72,7 +72,7 @@ func TestChip8_Cycle(t *testing.T) {
 	cfg := ObtainConfig()
 	testCycle(t, cfg.Test.ExpectedStateROM1, cfg.Test.ROM1, cfg.Test.FONT)
 	testCycle(t, cfg.Test.ExpectedStateROM2, cfg.Test.ROM2, cfg.Test.FONT)
-//	testCycle(t, cfg.Test.ExpectedStateROM3, cfg.Test.ROM3, cfg.Test.FONT)
+	//	testCycle(t, cfg.Test.ExpectedStateROM3, cfg.Test.ROM3, cfg.Test.FONT)
 
 }
 

@@ -52,8 +52,8 @@ func NewKeyHandler(window *pixelgl.Window, cmd *Cmd) KeyHandler {
 
 //ExecuteInputs checks which keys of the command map have been pressed and executes them
 func (kHandler *keyHandler) ExecuteInputs() {
-	for true{
-		clock := time.NewTicker((time.Second / time.Duration(500))*2)
+	for true {
+		clock := time.NewTicker((time.Second / time.Duration(500)) * 2)
 		select {
 		case <-clock.C:
 			{

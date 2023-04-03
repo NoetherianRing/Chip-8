@@ -27,7 +27,7 @@ type App struct {
 	beepStreamer beep.StreamSeekCloser
 	cfg          config.Config
 	window       *pixelgl.Window
-	channel 	 chan byte
+	channel      chan byte
 }
 
 //NewApp instantiates the App in which the chip8 is going to run.
@@ -81,13 +81,12 @@ func NewApp(cfg config.Config) (*App, error) {
 		format.SampleRate.N(time.Second/10),
 	)
 
-
 	cmdKeypad := make(keyhandlers.Cmd)
 
 	for k, v := range keyhandlers.KeyboardToKeypad {
 		newKey := v
 		cmdKeypad[k] = func() {
-				myApp.channel <- newKey
+			myApp.channel <- newKey
 		}
 	}
 	myApp.keypad = keyhandlers.NewKeyHandler(myApp.window, &cmdKeypad)
@@ -141,10 +140,9 @@ func (myApp *App) runChip8() {
 	go myApp.cycle()
 	myApp.update()
 
-
 }
 
-func (myApp *App) cycle(){
+func (myApp *App) cycle() {
 
 	clock := time.NewTicker(chip8.Frequency)
 	for !myApp.c8.IsClosed() {
@@ -152,7 +150,6 @@ func (myApp *App) cycle(){
 		case <-clock.C:
 			{
 				myApp.c8.Cycle()
-
 
 			}
 		}
@@ -170,7 +167,6 @@ func (myApp *App) debugChip8() {
 		panic(err)
 	}
 
-
 	go myApp.cycleDebug()
 	for {
 		myApp.update()
@@ -178,7 +174,7 @@ func (myApp *App) debugChip8() {
 	}
 
 }
-func (myApp *App) cycleDebug(){
+func (myApp *App) cycleDebug() {
 	clock := time.NewTicker(chip8.FrequencyDebugMode)
 	var sChip8 []state.StateChip8
 
