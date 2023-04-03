@@ -1,0 +1,8 @@
+paths:
+  beep: "beep.mp3"
+  rom: "PONG.ch8"
+  fonts: "chip8.font"
+
+debug:
+  on: "false"
+  file: "DEBUG.json"

@@ -2,6 +2,7 @@ package keyhandlers
 
 import (
 	"github.com/faiface/pixel/pixelgl"
+	"time"
 )
 
 type HexKeypad [16]byte
@@ -51,9 +52,19 @@ func NewKeyHandler(window *pixelgl.Window, cmd *Cmd) KeyHandler {
 
 //ExecuteInputs checks which keys of the command map have been pressed and executes them
 func (kHandler *keyHandler) ExecuteInputs() {
-	for key, c := range *kHandler.cmd {
-		if kHandler.JustPressed(key) {
-			c()
+	for true {
+		clock := time.NewTicker((time.Second / time.Duration(500)) * 2)
+		select {
+		case <-clock.C:
+			{
+				for key, c := range *kHandler.cmd {
+					if kHandler.JustPressed(key) {
+						c()
+
+					}
+
+				}
+			}
 		}
 
 	}

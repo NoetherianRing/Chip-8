@@ -55,6 +55,8 @@ func (oc opcode) TakeOpcodeID() uint16 {
 
 	case uint16(0x8):
 		return uint16(oc) & uint16(0xF00F)
+	case uint16(0x9):
+		return uint16(oc) & uint16(0xF00F)
 
 	case uint16(0xE):
 		return uint16(oc) & uint16(0xF0FF)

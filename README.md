@@ -7,6 +7,21 @@ Chip-8 is an interpreted programming language, developed by Joseph Weisbecker. I
 [Here's](https://en.wikipedia.org/wiki/CHIP-8) there is link to its wikipedia page, and [here's](http://devernay.free.fr/hacks/chip8/C8TECH10.HTM) a link to Cowgod's Chip-8 Technical Reference.
 
 This implementation uses faiface [pixel](https://github.com/faiface/pixel) for graphics and [beep](https://github.com/faiface/beep) for sound. 
+
+
+
+##Additional Memory and Instructions
+This emulator supports more memory than the original Chip 8 system, allowing you to run games and programs that require more memory. In addition, we have added two more instructions to the original set to enhance the compatibility with ROMs files generated with the "c8-compiler".
+
+The two new instructions are:
+
+- `9XY1`: Save the value of register `VX` in the first 8 bits of the index register `I`, and the value of register `VY` in the last 8 bits of I.
+- `9XY2`: Save the first 8 bits of the value of index register `I` in register `VX`, and the last 8 bits of `I` in register `VY`.
+  These instructions are not present in the original Chip 8 instruction set but are required to run ROMs files generated with the "c8-compiler".
+
+To learn more about the "c8-compiler", please visit the [c8-compiler Git repository](https://github.com/NoetherianRing/c8-compiler).
+
+
 ## Requirements
 
 This Chip-8 emulator uses [PixelGL](https://github.com/faiface/pixel/blob/master/README.md) and PixelGL uses OpenGL to render graphics. Because of that, OpenGL development libraries are needed for compilation. The dependencies are same as for [GLFW](https://github.com/go-gl/glfw).
@@ -17,11 +32,10 @@ The OpenGL version used is **OpenGL 3.3**.
 
 - On Ubuntu/Debian-like Linux distributions, you need `libgl1-mesa-dev` and `xorg-dev` packages.
 
-- On CentOS/Fedora-like Linux distributions, you need `libX11-devel libXcursor-devel libXrandr-devel libXinerama-devel mesa-libGL-devel libXi-devel libXxf86vm-devel` packages.
+- On CentOS/Fedora-like Linux distributions, you need `libX11-dev9el libXcursor-devel libXrandr-devel libXinerama-devel mesa-libGL-devel libXi-devel libXxf86vm-devel` packages.
 
 - See [here](http://www.glfw.org/docs/latest/compile.html#compile_deps) for full details.
 
-  
 
 ## Installation
 

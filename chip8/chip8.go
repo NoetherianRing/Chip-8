@@ -2,7 +2,6 @@ package chip8
 
 import (
 	"errors"
-	"github.com/NoetherianRing/Chip-8/keyhandlers"
 	"github.com/NoetherianRing/Chip-8/monitor"
 	"github.com/NoetherianRing/Chip-8/state"
 	"os"
@@ -19,9 +18,9 @@ type Chip8 struct {
 	sp byte //stack pointer, to keep track of what nesting level the program is at.
 
 	instructions map[uint16]func()
-	cOpcode      opcode                //current opcode
-	Keypad       keyhandlers.HexKeypad //The chip8 has a hex keyhandlers. It's public to be accessed by the peripherals.
-	frameBuffer  monitor.FrameBuffer   //The Chip8 has a monochromatic screen of 64x32 pixels. Each element of the FrameBuffer represents a pixel
+	cOpcode      opcode              //current opcode
+	keyPressed   chan byte           //The chip8 has a hex keypad. The channel is acceded by the peripherals and represents the key that was just pressed
+	frameBuffer  monitor.FrameBuffer //The Chip8 has a monochromatic screen of 64x32 pixels. Each element of the FrameBuffer represents a pixel
 	//Each pixel can be on or off.
 
 	delayTimer byte
@@ -30,17 +29,17 @@ type Chip8 struct {
 	quit       bool
 }
 
-func NewChip8() (*Chip8, error) {
+func NewChip8(keyPressed chan byte) (*Chip8, error) {
 	c8 := &Chip8{
 		memory:       [TotalMemory]byte{},
 		registers:    [NumberOfRegisters]byte{},
 		pc:           PCStartAddress,
 		stack:        [StackLevels]uint16{},
-		Keypad:       [NumberOfKeys]byte{},
 		frameBuffer:  monitor.FrameBuffer{},
 		instructions: map[uint16]func(){},
 	}
 
+	c8.keyPressed = keyPressed
 	c8.instructions[0x00E0] = c8.I00E0
 	c8.instructions[0x00EE] = c8.I00EE
 	c8.instructions[0x1000] = c8.I1NNN
@@ -67,6 +66,7 @@ func NewChip8() (*Chip8, error) {
 	c8.instructions[0xE09E] = c8.IEX9E
 	c8.instructions[0xE0A1] = c8.IEXA1
 	c8.instructions[0xF007] = c8.IFX07
+	c8.instructions[0xF00A] = c8.IFX0A
 	c8.instructions[0xF015] = c8.IFX15
 	c8.instructions[0xF018] = c8.IFX18
 	c8.instructions[0xF01E] = c8.IFX1E
@@ -74,6 +74,8 @@ func NewChip8() (*Chip8, error) {
 	c8.instructions[0xF033] = c8.IFX33
 	c8.instructions[0xF055] = c8.IFX55
 	c8.instructions[0xF065] = c8.IFX65
+	c8.instructions[0x9001] = c8.I9XY1
+	c8.instructions[0x9002] = c8.I9XY2
 
 	return c8, nil
 }
@@ -119,6 +121,7 @@ func (c8 *Chip8) executeOpcode() {
 	if inst, ok := c8.instructions[id]; ok {
 		inst()
 	}
+
 }
 
 //countBackDelayTimer. The chip8 has a delay timer which decreases in every cycle
@@ -170,14 +173,14 @@ func (c8 *Chip8) Cycle() {
 //Dump is used in the debug mode of the app, it dumps the state of the chip8 into a StateChip8 an return it
 func (c8 *Chip8) Dump() *state.StateChip8 {
 	s := new(state.StateChip8)
-	s.Memory = c8.memory
+	array := [400096]byte{}
+	s.Memory = array //c8.memory
 	s.Registers = c8.registers
 	s.Pc = c8.pc
 	s.I = c8.i
 	s.Stack = c8.stack
 	s.Sp = c8.sp
 	s.COpcode = uint16(c8.cOpcode)
-	s.Keypad = c8.Keypad
 	s.FrameBuffer = c8.frameBuffer
 	s.DelayTimer = c8.delayTimer
 	s.SoundTimer = c8.soundTimer

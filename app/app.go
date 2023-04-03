@@ -27,6 +27,7 @@ type App struct {
 	beepStreamer beep.StreamSeekCloser
 	cfg          config.Config
 	window       *pixelgl.Window
+	channel      chan byte
 }
 
 //NewApp instantiates the App in which the chip8 is going to run.
@@ -39,7 +40,8 @@ func NewApp(cfg config.Config) (*App, error) {
 	myApp := new(App)
 	var err error
 	myApp.cfg = cfg
-	myApp.c8, err = chip8.NewChip8()
+	myApp.channel = make(chan byte, 4)
+	myApp.c8, err = chip8.NewChip8(myApp.channel)
 	if err != nil {
 		return nil, err
 	}
@@ -79,18 +81,12 @@ func NewApp(cfg config.Config) (*App, error) {
 		format.SampleRate.N(time.Second/10),
 	)
 
-	myApp.c8, err = chip8.NewChip8()
-
-	if err != nil {
-		return nil, err
-	}
-
 	cmdKeypad := make(keyhandlers.Cmd)
 
 	for k, v := range keyhandlers.KeyboardToKeypad {
 		newKey := v
 		cmdKeypad[k] = func() {
-			myApp.c8.Keypad[newKey] = 1
+			myApp.channel <- newKey
 		}
 	}
 	myApp.keypad = keyhandlers.NewKeyHandler(myApp.window, &cmdKeypad)
@@ -100,6 +96,8 @@ func NewApp(cfg config.Config) (*App, error) {
 		myApp.c8.Close()
 		defer myApp.beepFile.Close()
 		defer myApp.beepStreamer.Close()
+		myApp.channel <- chip8.AsciiEscape
+
 	}
 	myApp.keyboard = keyhandlers.NewKeyHandler(myApp.window, &cmdKeyboard)
 
@@ -128,7 +126,6 @@ func (myApp *App) Run() {
 	if err != nil {
 		panic(err)
 	}
-
 	if myApp.cfg.Debug.On == "true" {
 		myApp.debugChip8()
 	} else {
@@ -138,17 +135,21 @@ func (myApp *App) Run() {
 
 //runChip8 executes the chip8 Cycle with a certain frequency and manages the peripherals.
 func (myApp *App) runChip8() {
-	clock := time.NewTicker(chip8.Frequency)
+	go myApp.keyboard.ExecuteInputs()
+	go myApp.keypad.ExecuteInputs()
+	go myApp.cycle()
+	myApp.update()
 
-	for {
+}
+
+func (myApp *App) cycle() {
+
+	clock := time.NewTicker(chip8.Frequency)
+	for !myApp.c8.IsClosed() {
 		select {
 		case <-clock.C:
 			{
 				myApp.c8.Cycle()
-				if myApp.c8.IsClosed() {
-					return
-				}
-				myApp.managePeripherals()
 
 			}
 		}
@@ -159,7 +160,6 @@ func (myApp *App) runChip8() {
 //debugChip8 does the same that runChip8 with the distinction it use another frequency and save the state of the chip8 in every cycle
 //to store it into a json file
 func (myApp *App) debugChip8() {
-	clock := time.NewTicker(chip8.FrequencyDebugMode)
 
 	_, err := os.Create(myApp.cfg.Debug.File)
 
@@ -167,6 +167,15 @@ func (myApp *App) debugChip8() {
 		panic(err)
 	}
 
+	go myApp.cycleDebug()
+	for {
+		myApp.update()
+
+	}
+
+}
+func (myApp *App) cycleDebug() {
+	clock := time.NewTicker(chip8.FrequencyDebugMode)
 	var sChip8 []state.StateChip8
 
 	for {
@@ -177,7 +186,6 @@ func (myApp *App) debugChip8() {
 				if myApp.c8.IsClosed() {
 					return
 				}
-				myApp.managePeripherals()
 				sChip8 = append(sChip8, *myApp.c8.Dump())
 				stateBytes, err := json.Marshal(sChip8)
 
@@ -194,20 +202,29 @@ func (myApp *App) debugChip8() {
 	}
 }
 
-//managePeripherals draws and beeps if it's needed, and executes the inputs.
-func (myApp *App) managePeripherals() {
+//update draws and beeps if it's needed, and executes the inputs.
+func (myApp *App) update() {
+	clock := time.NewTicker(chip8.Frequency)
 
-	if myApp.c8.MustDraw {
-		myApp.c8.MustDraw = false
+	for !myApp.c8.IsClosed() {
+		select {
+		case <-clock.C:
+			{
+				if myApp.c8.MustDraw {
+					myApp.c8.MustDraw = false
 
-		myApp.m.ToDraw(myApp.c8.GetFrameBuffer())
+					myApp.m.ToDraw(myApp.c8.GetFrameBuffer())
+				}
+				if myApp.c8.MustBeep() {
+					speaker.Play(myApp.beepStreamer)
+					_ = myApp.beepStreamer.Seek(0)
+
+				}
+
+				myApp.window.Update()
+
+			}
+
+		}
 	}
-	if myApp.c8.MustBeep() {
-		speaker.Play(myApp.beepStreamer)
-		_ = myApp.beepStreamer.Seek(0)
-
-	}
-	myApp.keyboard.ExecuteInputs()
-	myApp.keypad.ExecuteInputs()
-	myApp.window.Update()
 }

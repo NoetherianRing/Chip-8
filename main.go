@@ -5,11 +5,13 @@ import (
 	"github.com/NoetherianRing/Chip-8/config"
 	"github.com/faiface/pixel/pixelgl"
 	"gopkg.in/yaml.v2"
+	"math/rand"
 	"os"
+	"time"
 )
 
 func run() {
-
+	rand.Seed(time.Now().UnixMilli())
 	f, err := os.Open("config.yml")
 	if err != nil {
 		panic(err)
